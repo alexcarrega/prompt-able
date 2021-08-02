@@ -1,6 +1,6 @@
 # Prompt:able
 
-[![License](https://img.shields.io/github/license/alexcarrega/promp-able)](https://github.com/alexcarrega/prompt-able/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/alexcarrega/prompt-able)](https://github.com/alexcarrega/prompt-able/blob/master/LICENSE)
 [![Code size](https://img.shields.io/github/languages/code-size/alexcarrega/prompt-able?color=red&logo=github)](https://github.com/alexcarrega/prompt-able)
 [![Repository Size](https://img.shields.io/github/repo-size/alexcarrega/prompt-able?color=red&logo=github)](https://github.com/alexcarrega/prompt-able)
 [![Release](https://img.shields.io/github/v/tag/alexcarrega/prompt-able?label=release&logo=github)](https://github.com/alexcarrega/prompt-able/releases)
