@@ -1,6 +1,4 @@
 # Copyright (c) 2020 Alex Carrega <contact@alexcarrega.com>
 # author: Alex Carrega <contact@alexcarrega.com>
 
-beautifulsoup4==4.9.3
-dynaconf==3.1.4
-prompt-toolkit==3.0.19
+version = '0.0.1'
