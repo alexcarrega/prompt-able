@@ -6,7 +6,7 @@ import threading
 from datetime import datetime
 from string import Template
 from subprocess import PIPE, CompletedProcess, run
-from typing import Dict, Iterable, List, TypeVar
+from typing import Iterable, List, Optional, Tuple, TypeVar
 
 from bs4 import BeautifulSoup
 from dynaconf import Dynaconf
@@ -52,14 +52,14 @@ class CommandValidator(Validator):
 
     def validate(self: T_CommandValidator, document: Document) -> None:
         text = document.text.strip().lower()
-        if text not in self.data.available_commands:
+        if not text.startswith(tuple(self.data.available_commands)):
             raise ValidationError(message=f'Command {text} not found')
 
 
-def exec(command: str, data: Data) -> CompletedProcess[str]:
+def exec(command: str, args: str, data: Data) -> CompletedProcess[str]:
     data.last_exec_start = datetime.now()
     command = Template(command).substitute(**data.settings.get('vars', {}))
-    output = run(f'{command}', check=False, shell=True,
+    output = run(f'{command} {args}', check=False, shell=True,
                  stdout=PIPE, stderr=PIPE, universal_newlines=True)
     data.last_exec_end = datetime.now()
     data.last_exec_ret_code = output.returncode
@@ -71,9 +71,12 @@ def format(data: str, type: str, lines: bool) -> str:
         output = BeautifulSoup(data, features='html5lib').prettify()
         output = highlight(output, lexers.HtmlLexer(), formatters.TerminalFormatter())
     if type == 'json':
-        json_data = json.loads(data)
-        output = json.dumps(json_data, indent=4, sort_keys=True)
-        output = highlight(output, lexers.JsonLexer(), formatters.TerminalFormatter())
+        try:
+            json_data = json.loads(data)
+            output = json.dumps(json_data, indent=4, sort_keys=True)
+            output = highlight(output, lexers.JsonLexer(), formatters.TerminalFormatter())
+        except Exception as exception:
+            output = f'\nError: {exception}\nData: {data if data else NOT_AVAILABLE}\n'
     if type == 'std':
         output = data
     if lines:
@@ -88,7 +91,14 @@ def bottom_toolbar(data):
         duration = NOT_AVAILABLE
     else:
         duration = (data.last_exec_end - data.last_exec_start).total_seconds()
-    return lambda: HTML(f'<aaa fg="blue" bg="white"> Time: <b>{data.last_exec_end}</b> </aaa> - <aaa fg="lightyellow"> Duration: <b>{duration}</b> </aaa> - <aaa fg="dark{ret_code_style}" bg="white"> Return code: <b>{data.last_exec_ret_code}</b> </aaa>')
+    return lambda: HTML(f'<aaa fg="blue" bg="white"> - Time: <b>{data.last_exec_end}</b> </aaa><aaa fg="lightyellow"> - Duration: <b>{duration}</b> </aaa><aaa fg="dark{ret_code_style}" bg="white"> - Return code: <b>{data.last_exec_ret_code}</b> </aaa>')
+
+
+def get_command(input: str, data: Data) -> Tuple[Optional[str], Optional[str]]:
+    for cmd_key, cmd_data in data.settings.commands.items():
+        if input.startswith(cmd_key):
+            return (cmd_key, cmd_data)
+    return (None, None)
 
 
 def main():
@@ -96,21 +106,25 @@ def main():
     session = PromptSession(history=FileHistory('.prompt-able'))
 
     while True:
-        input = session.prompt(f'{data.settings.prompt} ',
-                               bottom_toolbar=bottom_toolbar(data),
-                               auto_suggest=AutoSuggestFromHistory(),
-                               completer=WordCompleter(data.available_commands),
-                               validator=CommandValidator(data),
-                               validate_while_typing=False).strip().lower()
-        if input in data.settings.commands.keys():
-            command_input = data.settings.commands.get(input)
-            type = command_input.output.strip().lower()
-            lines = command_input.lines
-            output_process = exec(command_input.exec, data)
-            output_stdout = format(output_process.stdout, type, lines)
-            print(output_stdout)
-        elif input == 'q':
-            exit(0)
+        try:
+            input = session.prompt(f'{data.settings.prompt} ',
+                                   bottom_toolbar=bottom_toolbar(data),
+                                   auto_suggest=AutoSuggestFromHistory(),
+                                   completer=WordCompleter(data.available_commands),
+                                   validator=CommandValidator(data),
+                                   validate_while_typing=False).strip().lower()
+            command_key, command_data = get_command(input, data)
+            if command_data:
+                type = command_data.output.strip().lower()
+                lines = command_data.lines
+                args = input.replace(command_key, '')
+                output_process = exec(command_data.exec, args, data)
+                output_stdout = format(output_process.stdout, type, lines)
+                print(output_stdout)
+            elif input == 'q':
+                exit(0)
+        except KeyboardInterrupt or EOFError as err:
+            print(err)
 
 
 if __name__ == '__main__':
