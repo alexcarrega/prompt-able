@@ -5,12 +5,8 @@ commands:
     output: json
     lines: true
   guard-exec-env:
-    exec: http GET $guard_endpoint/exec-env $guard_auth
+    exec: http GET $guard_endpoint/exec-env $guard_auth select:='["$arg_1","$arg_2"]' where:='{"equals":{"target":"partner","expr":"cnit"}}'
     output: json
-    lines: true
-  test:
-    exec: ls 
-    output: std
     lines: true
 vars:
   astrid_auth: 'Authorization:"ASTRID eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNjE2NzgxMDU4IiwiZXhwIjoiMTY0ODMxNzA1OCIsIm5iZiI6MTYxNjc4MTA1OH0.3eNv1XH_YDq_u5KFn8B79KMzXPXI1cypgjry9xKXlN4"' 

@@ -6,9 +6,10 @@ import threading
 from datetime import datetime
 from string import Template
 from subprocess import PIPE, CompletedProcess, run
-from typing import Iterable, List, Optional, Tuple, TypeVar
+from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 
 from bs4 import BeautifulSoup
+from bunch import Bunch
 from dynaconf import Dynaconf
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import WordCompleter
@@ -58,25 +59,36 @@ class CommandValidator(Validator):
 
 def exec(command: str, args: str, data: Data) -> CompletedProcess[str]:
     data.last_exec_start = datetime.now()
-    command = Template(command).substitute(**data.settings.get('vars', {}))
-    output = run(f'{command} {args}', check=False, shell=True,
-                 stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    args = list(filter(lambda arg: arg.strip(), args))
+    args_dict = {f'arg_{i}': v for i, v in enumerate(args, 1)}
+    args_dict['args'] = '\n'.join(args)
+    try:
+        command = Template(command).substitute(**data.settings.get('vars', {}), **args_dict)
+        output = run(command, check=False, shell=True,
+                     stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    except KeyError as key_error:
+        return Bunch(args=command, stdout=NOT_AVAILABLE, stderr=f'Variable not found: {key_error}', returncode=1)
     data.last_exec_end = datetime.now()
     data.last_exec_ret_code = output.returncode
     return output
 
 
-def format(data: str, type: str, lines: bool) -> str:
+def default(text: str) -> str:
+    return text if text else NOT_AVAILABLE
+
+
+def format(data: CompletedProcess[str], type: str, lines: bool) -> str:
     if type == 'html':
-        output = BeautifulSoup(data, features='html5lib').prettify()
+        output = BeautifulSoup(data.stdout, features='html5lib').prettify()
         output = highlight(output, lexers.HtmlLexer(), formatters.TerminalFormatter())
     if type == 'json':
         try:
-            json_data = json.loads(data)
+            json_data = json.loads(data.stdout)
             output = json.dumps(json_data, indent=4, sort_keys=True)
             output = highlight(output, lexers.JsonLexer(), formatters.TerminalFormatter())
         except Exception as exception:
-            output = f'\nError: {exception}\nData: {data if data else NOT_AVAILABLE}\n'
+
+            output = f'\nError: {exception}\nInput: {data.args}\nOutput: {default(data.stdout)}\nMessage: {default(data.stderr)}\n'
     if type == 'std':
         output = data
     if lines:
@@ -117,10 +129,10 @@ def main():
             if command_data:
                 type = command_data.output.strip().lower()
                 lines = command_data.lines
-                args = input.replace(command_key, '')
+                args = input.replace(command_key, '').split(' ')
                 output_process = exec(command_data.exec, args, data)
-                output_stdout = format(output_process.stdout, type, lines)
-                print(output_stdout)
+                output = format(output_process, type, lines)
+                print(output)
             elif input == 'q':
                 exit(0)
         except KeyboardInterrupt or EOFError as err:
