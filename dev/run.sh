@@ -1,7 +1,6 @@
+#!/bin/sh
+
 # Copyright (c) 2020-2029 Alex Carrega <contact@alexcarrega.com>
 # author: Alex Carrega <contact@alexcarrega.com>
 
-beautifulsoup4==4.9.3
-bunch==1.0.1
-dynaconf==3.1.4
-prompt-toolkit==3.0.19
+vprof -c cmh main.py --output-file dev/profile.json
