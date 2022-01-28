@@ -3,7 +3,7 @@
 
 __pycache__
 .history
-*.egg-info
-build
-dist
-log
+/.tmp
+/docs/.build
+/log
+Pipfile.lock

@@ -74,14 +74,14 @@ def exec(command: str, args: str, data: Data) -> CompletedProcess[str]:
 
 
 def default(text: str) -> str:
-    return text if text else NOT_AVAILABLE
+    return text or NOT_AVAILABLE
 
 
 def format(data: CompletedProcess[str], type: str, lines: bool) -> str:
     if type == 'html':
         output = BeautifulSoup(data.stdout, features='html5lib').prettify()
         output = highlight(output, lexers.HtmlLexer(), formatters.TerminalFormatter())
-    if type == 'json':
+    elif type == 'json':
         try:
             json_data = json.loads(data.stdout)
             output = json.dumps(json_data, indent=4, sort_keys=True)
@@ -89,7 +89,7 @@ def format(data: CompletedProcess[str], type: str, lines: bool) -> str:
         except Exception as exception:
 
             output = f'\nError: {exception}\nInput: {data.args}\nOutput: {default(data.stdout)}\nMessage: {default(data.stderr)}\n'
-    if type == 'std':
+    elif type == 'std':
         output = data
     if lines:
         return '\n'.join(map(lambda line: '{0:>5}'.format(line[0]) + '.\t' + line[1], enumerate(output.split('\n'))))

@@ -1,5 +1,6 @@
+#!/bin/bash
+
 # Copyright (c) 2020-2029 Alex Carrega <contact@alexcarrega.com>
 # author: Alex Carrega <contact@alexcarrega.com>
 
-[flake8]
-max-line-length = 140
+pipenv lock -r > requirements.txt

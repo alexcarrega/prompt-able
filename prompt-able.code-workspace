@@ -4,5 +4,22 @@
             "name": "prompt:able",
             "path": "."
         }
-    ]
+    ],
+    "settings": {
+        "cSpell.words": [
+            "autopep",
+            "beautifulsoup",
+            "codestyle",
+            "Lexer",
+            "lexers",
+            "mccabe",
+            "pipenv",
+            "pycallgraph",
+            "pyflakes",
+            "Pygments",
+            "pylint",
+            "soupsieve",
+            "wcwidth"
+        ]
+    }
 }

@@ -1,0 +1,51 @@
+# Copyright (c) 2020-2029 Alex Carrega <contact@alexcarrega.com>
+# author: Alex Carrega <contact@alexcarrega.com>
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+beautifulsoup4 = "==4.10.0"
+bs4 = "==0.0.1"
+bunch = "==1.0.1"
+dynaconf = "==3.1.7"
+prompt-toolkit = "==3.0.20"
+Pygments = "==2.10.0"
+soupsieve = "==2.2.1"
+wcwidth = "==0.2.5"
+
+[dev-packages]
+autopep8 = "*" # https://github.com/hhatto/autopep8
+black = "*" # https://github.com/psf/black
+flake8 = "*" # https://flake8.pycqa.org
+mccabe = "*" # https://github.com/PyCQA/mccabe
+pycallgraph = "*" # https://pycallgraph.readthedocs.io/en/master/
+pycodestyle = "*" # https://github.com/PyCQA/pycodestyle
+pyflakes = "*" # https://github.com/PyCQA/pyflakes
+pylint = "*" # https://pylint.org/
+setuptools = "==57.5.0" # for pycallgraph
+vprof = "*" # https://github.com/nvdv/vprof
+
+[requires]
+python_version = "3.10"
+
+[scripts]
+# program
+requirements = "bash scripts/requirements.sh"
+start = "bash scripts/start.sh"
+# dev
+changelog = "bat CHANGELOG.md"
+codestyle = "find src -iname '*.py' -exec pycodestyle --first {} \\;"
+complexity = "find src -iname '*.py' -exec python -m mccabe {} \\;"
+error-check = "python3 -m pyflakes src"
+format-black = "black src/"
+format-pep8 = "find src -iname '*.py' -exec autopep8 --in-place --aggressive --aggressive {} \\;"
+graph = "pycallgraph src/ --output=dev/graph.svg"
+linter = "find src -iname '*.py' -exec pylint {} \\;"
+profiler-start = "vprof -c cmh src/main.py --output-file dev/profiler.json"
+profiler-view = "vprof --input-file dev/profiler.json"
+requirements-dev = "bash scripts/requirements-dev.sh"
+security-scan = "docker scan cnit_ml"
+style-guide = "flake8 src/"

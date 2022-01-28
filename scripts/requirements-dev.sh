@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (c) 2020-2029 Alex Carrega <contact@alexcarrega.com>
 # author: Alex Carrega <contact@alexcarrega.com>
 
-vprof -c cmh src/main.py --output-file dev/profile.json
+pipenv lock -r --dev-only > dev/requirements.txt
