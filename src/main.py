@@ -103,8 +103,8 @@ def bottom_toolbar(data):
         duration = NOT_AVAILABLE
     else:
         duration = (data.last_exec_end - data.last_exec_start).total_seconds()
-    return lambda: HTML(f'<aaa fg="blue" bg="white"> - Time: <b>{data.last_exec_end}</b> '+
-                        f'</aaa><aaa fg="lightyellow"> - Duration: <b>{duration}</b> '+
+    return lambda: HTML(f'<aaa fg="blue" bg="white"> - Time: <b>{data.last_exec_end}</b> ' +
+                        f'</aaa><aaa fg="lightyellow"> - Duration: <b>{duration}</b> ' +
                         f'</aaa><aaa fg="dark{ret_code_style}" bg="white"> - '
                         f'Return code: <b>{data.last_exec_ret_code}</b> </aaa>')
 
