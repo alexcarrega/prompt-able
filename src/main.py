@@ -6,7 +6,7 @@ import threading
 from datetime import datetime
 from string import Template
 from subprocess import PIPE, CompletedProcess, run
-from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
+from typing import Iterable, List, Optional, Tuple, TypeVar
 
 from bs4 import BeautifulSoup
 from bunch import Bunch
@@ -103,14 +103,21 @@ def bottom_toolbar(data):
         duration = NOT_AVAILABLE
     else:
         duration = (data.last_exec_end - data.last_exec_start).total_seconds()
-    return lambda: HTML(f'<aaa fg="blue" bg="white"> - Time: <b>{data.last_exec_end}</b> </aaa><aaa fg="lightyellow"> - Duration: <b>{duration}</b> </aaa><aaa fg="dark{ret_code_style}" bg="white"> - Return code: <b>{data.last_exec_ret_code}</b> </aaa>')
+    return lambda: HTML(f'<aaa fg="blue" bg="white"> - Time: <b>{data.last_exec_end}</b> '+
+                        f'</aaa><aaa fg="lightyellow"> - Duration: <b>{duration}</b> '+
+                        f'</aaa><aaa fg="dark{ret_code_style}" bg="white"> - '
+                        f'Return code: <b>{data.last_exec_ret_code}</b> </aaa>')
 
 
 def get_command(input: str, data: Data) -> Tuple[Optional[str], Optional[str]]:
-    for cmd_key, cmd_data in data.settings.commands.items():
-        if input.startswith(cmd_key):
-            return (cmd_key, cmd_data)
-    return (None, None)
+    return next(
+        (
+            (cmd_key, cmd_data)
+            for cmd_key, cmd_data in data.settings.commands.items()
+            if input.startswith(cmd_key)
+        ),
+        (None, None),
+    )
 
 
 def main():
